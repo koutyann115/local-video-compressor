@@ -1,0 +1,16 @@
+# Generated media & runtime temp files
+output/
+temp/
+
+# Logs & temporary test artifacts
+*.log
+_test*
+_verify*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+desktop.ini
+node_modules/
+.vscode/
+.idea/

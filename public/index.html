@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ローカル動画圧縮ツール | 20MB以下へ一発変換</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --bg-elevated: #121826;
+      --bg-card: #161e2e;
+      --bg-input: #0e1422;
+      --border: rgba(255, 255, 255, 0.09);
+      --border-hover: rgba(99, 102, 241, 0.5);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --accent-soft: rgba(99, 102, 241, 0.16);
+      --success: #10b981;
+      --success-soft: rgba(16, 185, 129, 0.15);
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.15);
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.15);
+      --radius: 14px;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(900px 500px at 10% -10%, rgba(99, 102, 241, 0.16), transparent 60%),
+        radial-gradient(700px 450px at 95% 0%, rgba(16, 185, 129, 0.10), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 20px 64px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #22d3ee);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .pill.gpu {
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.3);
+      background: var(--success-soft);
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      padding: 9px 15px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.16s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--border-hover);
+      background: #1d273b;
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.32);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #818cf8, #6366f1);
+      border-color: transparent;
+    }
+
+    .btn-success {
+      background: var(--success-soft);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .btn-danger {
+      background: var(--danger-soft);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .btn-sm {
+      padding: 6px 11px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      margin: 0 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Dropzone */
+    .dropzone {
+      border: 2px dashed rgba(99, 102, 241, 0.4);
+      border-radius: var(--radius);
+      background: rgba(99, 102, 241, 0.05);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: var(--accent-hover);
+      background: rgba(99, 102, 241, 0.12);
+      transform: scale(1.005);
+    }
+
+    .drop-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .drop-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .drop-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* File List */
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .file-item {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .file-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .file-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .plan-preview {
+      margin-top: 7px;
+      padding-top: 7px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+      font-size: 11.5px;
+      color: #cbd5e1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .plan-warn {
+      margin-top: 6px;
+      padding: 6px 9px;
+      border-radius: 7px;
+      background: var(--warning-soft);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
+      font-size: 11.5px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+    }
+
+    .tag.accent { background: var(--accent-soft); color: #a5b4fc; }
+    .tag.ok { background: var(--success-soft); color: #34d399; }
+    .tag.warn { background: var(--warning-soft); color: #fbbf24; }
+    .tag.err { background: var(--danger-soft); color: #fca5a5; }
+
+    /* Presets & Settings */
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: var(--bg-input);
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .mode-tab {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 8px 10px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .mode-tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .size-presets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .preset-btn {
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      padding: 10px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--border-hover);
+    }
+
+    .preset-btn.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+
+    .preset-val {
+      font-size: 15px;
+      font-weight: 700;
+      display: block;
+    }
+
+    .preset-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+
+    .field-row .field { margin-bottom: 0; }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 11px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    details {
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-elevated);
+      padding: 10px 12px;
+    }
+
+    summary {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .details-body {
+      margin-top: 12px;
+    }
+
+    .start-btn {
+      width: 100%;
+      padding: 13px 18px;
+      font-size: 15px;
+      border-radius: 12px;
+    }
+
+    /* Jobs section */
+    .jobs-section {
+      margin-top: 22px;
+    }
+
+    .job-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .job-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .job-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .job-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .progress-wrap {
+      margin-top: 10px;
+    }
+
+    .progress-track {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #6366f1, #22d3ee);
+      transition: width 0.25s ease;
+    }
+
+    .progress-meta {
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .result-bar {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .size-compare {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+
+    .preview-box {
+      margin-top: 12px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid var(--border);
+    }
+
+    .preview-box video,
+    .preview-box img {
+      display: block;
+      width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 26px 12px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .hint-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.22);
+      font-size: 12px;
+      color: #c7d2fe;
+    }
+
+    .upload-progress {
+      margin-top: 12px;
+      display: none;
+    }
+
+    .upload-progress.active {
+      display: block;
+    }
+
+    .shutdown-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 15, 25, 0.92);
+      display: none;
+      place-items: center;
+      z-index: 999;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .shutdown-overlay.active {
+      display: grid;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">🎬</div>
+        <div>
+          <h1>ローカル動画圧縮ツール</h1>
+          <div class="subtitle">完全ローカル処理・外部アップロード不要・目標サイズ（20MB以下など）に自動最適化</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="gpuPill" class="pill">検出中...</span>
+        <button class="btn btn-sm" id="openOutputBtn" type="button">📂 保存フォルダを開く</button>
+        <button class="btn btn-sm btn-danger" id="shutdownBtn" type="button" title="ローカルサーバーを安全に終了します">⏻ 終了</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left: Dropzone & Loaded Files -->
+      <div class="card">
+        <div class="card-title">
+          <span>1. 動画を追加</span>
+          <button class="btn btn-sm" id="clearFilesBtn" type="button" style="display:none;">すべてクリア</button>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <div class="drop-icon">📥</div>
+          <div class="drop-title">ここに動画をドラッグ＆ドロップ</div>
+          <div class="drop-sub">またはクリックして選択（MP4 / MOV / MKV / WebM / AVI 等・複数ファイル対応）</div>
+          <input type="file" id="fileInput" accept="video/*,.mkv,.avi,.mov,.webm,.mp4,.m4v,.flv,.wmv,.ts" multiple hidden />
+        </div>
+
+        <div class="upload-progress" id="uploadProgress">
+          <div class="progress-track">
+            <div class="progress-fill" id="uploadFill" style="width: 0%"></div>
+          </div>
+          <div class="progress-meta">
+            <span id="uploadStatusText">読み込み中...</span>
+            <span id="uploadPctText">0%</span>
+          </div>
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+      </div>
+
+      <!-- Right: Compression Settings -->
+      <div class="card">
+        <div class="card-title">
+          <span>2. 圧縮・変換設定</span>
+          <span class="tag accent" id="activeSummaryTag">20MB以下 / MP4</span>
+        </div>
+
+        <div class="mode-tabs">
+          <button type="button" class="mode-tab active" data-mode="target_size">目標サイズ指定</button>
+          <button type="button" class="mode-tab" data-mode="quality">画質優先 (CRF)</button>
+        </div>
+
+        <!-- Target size panel -->
+        <div id="targetSizePanel">
+          <div class="size-presets">
+            <button type="button" class="preset-btn" data-size="8">
+              <span class="preset-val">8 MB</span>
+              <span class="preset-label">Discord無料</span>
+            </button>
+            <button type="button" class="preset-btn" data-size="10">
+              <span class="preset-val">10 MB</span>
+              <span class="preset-label">軽め・共有用</span>
+            </button>
+            <button type="button" class="preset-btn active" data-size="20">
+              <span class="preset-val">20 MB</span>
+              <span class="preset-label">標準おすすめ</span>
+            </button>
+            <button type="button" class="preset-btn" data-size="25">
+              <span class="preset-val">25 MB</span>
+              <span class="preset-label">メール添付等</span>
+            </button>
+            <button type="button" class="preset-btn" data-size="50">
+              <span class="preset-val">50 MB</span>
+              <span class="preset-label">高画質SNS</span>
+            </button>
+            <button type="button" class="preset-btn" data-size="100">
+              <span class="preset-val">100 MB</span>
+              <span class="preset-label">長尺向け</span>
+            </button>
+          </div>
+
+          <div class="field">
+            <label for="targetSizeInput">目標サイズ (MB) — 自由に指定可能</label>
+            <input type="number" id="targetSizeInput" min="0.5" max="4000" step="0.5" value="20" />
+          </div>
+        </div>
+
+        <!-- Quality panel -->
+        <div id="qualityPanel" style="display:none;">
+          <div class="field">
+            <label for="crfInput">画質レベル (CRF): <strong id="crfLabel">24（バランス）</strong></label>
+            <input type="range" id="crfInput" min="18" max="36" value="24" />
+            <div class="progress-meta">
+              <span>高画質・大サイズ (18)</span>
+              <span>軽量・小サイズ (36)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="formatSelect">出力形式</label>
+            <select id="formatSelect">
+              <option value="mp4" selected>MP4 (H.264 / 汎用)</option>
+              <option value="hevc">MP4 (H.265 / 高圧縮)</option>
+              <option value="webm">WebM (VP9)</option>
+              <option value="mov">MOV (QuickTime)</option>
+              <option value="gif">GIF (アニメーション)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="speedSelect">エンコード方式</label>
+            <select id="speedSelect">
+              <option value="accurate_2pass" selected>高精度 2パス（おすすめ）</option>
+              <option value="fast_1pass">高速 1パス (CPU)</option>
+              <option value="gpu" id="gpuOption" disabled>GPU高速エンコード (未検出)</option>
+            </select>
+          </div>
+        </div>
+
+        <details>
+          <summary>詳細オプション（解像度・FPS・音声・トリミング）</summary>
+          <div class="details-body">
+            <div class="field-row">
+              <div class="field">
+                <label for="resolutionSelect">解像度（短辺上限）</label>
+                <select id="resolutionSelect">
+                  <option value="auto" selected>自動最適化（おすすめ）</option>
+                  <option value="original">元の解像度を維持</option>
+                  <option value="1080">1080p (Full HD)</option>
+                  <option value="720">720p (HD)</option>
+                  <option value="480">480p (軽量)</option>
+                  <option value="360">360p (超軽量)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="fpsSelect">フレームレート</label>
+                <select id="fpsSelect">
+                  <option value="original" selected>元のまま（自動調整）</option>
+                  <option value="60">60 fps</option>
+                  <option value="30">30 fps</option>
+                  <option value="24">24 fps</option>
+                  <option value="15">15 fps</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row" style="margin-top: 10px;">
+              <div class="field">
+                <label for="audioSelect">音声</label>
+                <select id="audioSelect">
+                  <option value="auto" selected>自動最適化</option>
+                  <option value="128">128 kbps (標準)</option>
+                  <option value="96">96 kbps (軽量)</option>
+                  <option value="64">64 kbps (低ビットレート)</option>
+                  <option value="mute">音声なし（ミュート）</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>トリミング（任意）</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                  <input type="text" id="trimStartInput" placeholder="開始 例 0:05" />
+                  <input type="text" id="trimEndInput" placeholder="終了 例 0:30" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <button class="btn btn-primary start-btn" id="startBtn" type="button" disabled>
+          🚀 圧縮・変換をスタート
+        </button>
+
+        <div class="hint-box" id="hintBox">
+          💡 目標サイズに収まるようビットレートと解像度を自動計算します。元より大きく膨張しない上限保護・自動リトライ付きです。
+        </div>
+      </div>
+    </div>
+
+    <!-- Jobs & History -->
+    <div class="card jobs-section">
+      <div class="card-title">
+        <span>3. 変換キュー・完了ファイル</span>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span class="subtitle" id="outputDirText"></span>
+          <button class="btn btn-sm" id="clearJobsBtn" type="button" style="display:none;">完了済みをクリア</button>
+        </div>
+      </div>
+      <div class="job-list" id="jobList">
+        <div class="empty-state">まだ変換ジョブはありません。動画を追加して「圧縮・変換をスタート」を押してください。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shutdown-overlay" id="shutdownOverlay">
+    <div class="card" style="max-width:420px;">
+      <h2 style="margin-top:0;">アプリを終了しました</h2>
+      <p class="subtitle">ローカルサーバーを安全に停止しました。このブラウザタブは閉じて構いません。</p>
+    </div>
+  </div>
+
+  <script>
+    const SETTINGS_KEY = 'local-video-compressor-settings-v1';
+
+    const state = {
+      files: [], // { fileId, originalName, meta }
+      plans: new Map(), // fileId -> plan
+      jobs: new Map(), // jobId -> job
+      jobRenderState: new Map(), // jobId -> { status, previewOpen }
+      mode: 'target_size',
+      hw: null,
+      openPreviews: new Set()
+    };
+
+    const els = {
+      dropzone: document.getElementById('dropzone'),
+      fileInput: document.getElementById('fileInput'),
+      fileList: document.getElementById('fileList'),
+      clearFilesBtn: document.getElementById('clearFilesBtn'),
+      uploadProgress: document.getElementById('uploadProgress'),
+      uploadFill: document.getElementById('uploadFill'),
+      uploadStatusText: document.getElementById('uploadStatusText'),
+      uploadPctText: document.getElementById('uploadPctText'),
+      targetSizePanel: document.getElementById('targetSizePanel'),
+      qualityPanel: document.getElementById('qualityPanel'),
+      targetSizeInput: document.getElementById('targetSizeInput'),
+      crfInput: document.getElementById('crfInput'),
+      crfLabel: document.getElementById('crfLabel'),
+      formatSelect: document.getElementById('formatSelect'),
+      speedSelect: document.getElementById('speedSelect'),
+      gpuOption: document.getElementById('gpuOption'),
+      resolutionSelect: document.getElementById('resolutionSelect'),
+      fpsSelect: document.getElementById('fpsSelect'),
+      audioSelect: document.getElementById('audioSelect'),
+      trimStartInput: document.getElementById('trimStartInput'),
+      trimEndInput: document.getElementById('trimEndInput'),
+      startBtn: document.getElementById('startBtn'),
+      activeSummaryTag: document.getElementById('activeSummaryTag'),
+      gpuPill: document.getElementById('gpuPill'),
+      outputDirText: document.getElementById('outputDirText'),
+      openOutputBtn: document.getElementById('openOutputBtn'),
+      shutdownBtn: document.getElementById('shutdownBtn'),
+      shutdownOverlay: document.getElementById('shutdownOverlay'),
+      clearJobsBtn: document.getElementById('clearJobsBtn'),
+      jobList: document.getElementById('jobList')
+    };
+
+    function formatDuration(sec) {
+      if (!sec || Number.isNaN(sec)) return '0:00';
+      const s = Math.round(sec);
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const r = s % 60;
+      if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}`;
+      return `${m}:${String(r).padStart(2, '0')}`;
+    }
+
+    function formatEta(etaSec) {
+      if (etaSec === null || etaSec === undefined || Number.isNaN(etaSec)) return '';
+      if (etaSec <= 1) return 'まもなく完了';
+      if (etaSec < 60) return `残り 約${etaSec}秒`;
+      const m = Math.floor(etaSec / 60);
+      const s = etaSec % 60;
+      return `残り 約${m}分${s > 0 ? `${s}秒` : ''}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getCurrentOptions() {
+      return {
+        mode: state.mode,
+        targetSizeMB: parseFloat(els.targetSizeInput.value) || 20,
+        crf: parseInt(els.crfInput.value, 10) || 24,
+        format: els.formatSelect.value,
+        speedMode: els.speedSelect.value,
+        resolution: els.resolutionSelect.value,
+        fps: els.fpsSelect.value,
+        audio: els.audioSelect.value,
+        trimStart: els.trimStartInput.value.trim(),
+        trimEnd: els.trimEndInput.value.trim()
+      };
+    }
+
+    function saveSettings() {
+      try {
+        const opt = getCurrentOptions();
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+          mode: opt.mode,
+          targetSizeMB: opt.targetSizeMB,
+          crf: opt.crf,
+          format: opt.format,
+          speedMode: opt.speedMode,
+          resolution: opt.resolution,
+          fps: opt.fps,
+          audio: opt.audio
+        }));
+      } catch {}
+    }
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        if (!raw) return null;
+        const saved = JSON.parse(raw);
+        if (saved.mode === 'quality' || saved.mode === 'target_size') {
+          state.mode = saved.mode;
+          document.querySelectorAll('.mode-tab').forEach((b) => b.classList.toggle('active', b.dataset.mode === state.mode));
+          els.targetSizePanel.style.display = state.mode === 'target_size' ? 'block' : 'none';
+          els.qualityPanel.style.display = state.mode === 'quality' ? 'block' : 'none';
+        }
+        if (saved.targetSizeMB) {
+          els.targetSizeInput.value = saved.targetSizeMB;
+          document.querySelectorAll('.preset-btn').forEach((b) => {
+            b.classList.toggle('active', b.dataset.size === String(saved.targetSizeMB));
+          });
+        }
+        if (saved.crf) {
+          els.crfInput.value = saved.crf;
+          updateCrfLabel();
+        }
+        if (saved.format) els.formatSelect.value = saved.format;
+        if (saved.resolution) els.resolutionSelect.value = saved.resolution;
+        if (saved.fps) els.fpsSelect.value = saved.fps;
+        if (saved.audio) els.audioSelect.value = saved.audio;
+        return saved;
+      } catch {
+        return null;
+      }
+    }
+
+    function updateCrfLabel() {
+      const v = parseInt(els.crfInput.value, 10);
+      const desc = v <= 20 ? '超高画質' : v <= 24 ? 'バランス' : v <= 28 ? '軽量' : '超軽量';
+      els.crfLabel.textContent = `${v}（${desc}）`;
+    }
+
+    let planTimer = null;
+    function schedulePlanRefresh() {
+      clearTimeout(planTimer);
+      planTimer = setTimeout(fetchPlans, 150);
+    }
+
+    async function fetchPlans() {
+      if (state.files.length === 0) return;
+      try {
+        const resp = await fetch('/api/plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileIds: state.files.map((f) => f.fileId),
+            options: getCurrentOptions()
+          })
+        });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (data.plans) {
+          for (const [fid, plan] of Object.entries(data.plans)) {
+            state.plans.set(fid, plan);
+          }
+          renderFiles();
+        }
+      } catch {}
+    }
+
+    function updateSummaryTag() {
+      const opt = getCurrentOptions();
+      const fmtLabel = {
+        mp4: 'MP4 (H.264)',
+        hevc: 'MP4 (H.265)',
+        webm: 'WebM',
+        mov: 'MOV',
+        gif: 'GIF'
+      }[opt.format] || opt.format.toUpperCase();
+
+      if (opt.format === 'gif') {
+        els.activeSummaryTag.textContent = `GIFアニメ`;
+      } else if (opt.mode === 'target_size') {
+        els.activeSummaryTag.textContent = `${opt.targetSizeMB}MB以下 / ${fmtLabel}`;
+      } else {
+        els.activeSummaryTag.textContent = `CRF ${opt.crf} / ${fmtLabel}`;
+      }
+      saveSettings();
+      renderFiles();
+      schedulePlanRefresh();
+    }
+
+    function renderFiles() {
+      els.clearFilesBtn.style.display = state.files.length > 0 ? 'inline-flex' : 'none';
+      els.startBtn.disabled = state.files.length === 0;
+      els.startBtn.textContent = state.files.length > 1
+        ? `🚀 ${state.files.length}件の動画をまとめて圧縮スタート`
+        : '🚀 圧縮・変換をスタート';
+
+      if (state.files.length === 0) {
+        els.fileList.innerHTML = '';
+        return;
+      }
+
+      const opt = getCurrentOptions();
+      els.fileList.innerHTML = state.files.map((f) => {
+        const m = f.meta;
+        const plan = state.plans.get(f.fileId);
+        const alreadySmall = opt.mode === 'target_size' && opt.format !== 'gif' && m.sizeMB <= opt.targetSizeMB;
+
+        let planHtml = '';
+        if (plan) {
+          const bits = [];
+          if (plan.estimatedMB && plan.format !== 'gif') bits.push(`予想 ~${plan.estimatedMB}MB`);
+          if (plan.targetVideoBitrateKbps) bits.push(`映像 ${plan.targetVideoBitrateKbps}kbps`);
+          if (plan.maxShortSide) bits.push(`最大 ${plan.maxShortSide}p`);
+          if (plan.targetFps) bits.push(`${plan.targetFps}fps`);
+          if (plan.useGpu) bits.push(`⚡ ${plan.videoCodec}`);
+          else if (plan.useTwoPass) bits.push('2パス');
+          if (plan.cappedBySource) bits.push('膨張防止');
+          if (plan.gpuFallback) bits.push('GPU非対応のためCPU処理');
+
+          planHtml = `
+            <div class="plan-preview">
+              <span style="color:var(--text-muted);">変換プラン:</span>
+              ${bits.map((b) => `<span class="tag">${escapeHtml(b)}</span>`).join('')}
+            </div>
+            ${plan.impossibleTarget ? `
+              <div class="plan-warn">⚠ この長さ（${formatDuration(plan.effectiveDuration)}）では最小でも約 ${plan.minPossibleMB} MB 必要です。目標サイズを大きくするか、トリミング・音声ミュートをご検討ください。</div>
+            ` : ''}
+          `;
+        }
+
+        return `
+          <div class="file-item">
+            <div class="file-info">
+              <div class="file-name" title="${escapeHtml(f.originalName)}">${escapeHtml(f.originalName)}</div>
+              <div class="file-meta">
+                <span class="tag accent">${m.sizeMB.toFixed(2)} MB</span>
+                <span class="tag">${m.width}×${m.height}</span>
+                <span class="tag">${formatDuration(m.duration)}</span>
+                <span class="tag">${m.fps} fps</span>
+                <span class="tag">${escapeHtml(m.videoCodec)}</span>
+                ${alreadySmall ? `<span class="tag ok">すでに${opt.targetSizeMB}MB以下</span>` : ''}
+              </div>
+              ${planHtml}
+            </div>
+            <button class="btn btn-sm btn-danger" type="button" data-action="remove-file" data-file-id="${escapeHtml(f.fileId)}">削除</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function buildJobCardInnerHtml(job) {
+      const statusBadge = {
+        queued: '<span class="tag">待機中</span>',
+        running: '<span class="tag accent">変換中</span>',
+        done: '<span class="tag ok">完了</span>',
+        cancelled: '<span class="tag warn">キャンセル</span>',
+        error: '<span class="tag err">エラー</span>'
+      }[job.status] || '';
+
+      const isActive = job.status === 'queued' || job.status === 'running';
+      const res = job.result;
+      const showPreview = state.openPreviews.has(job.id);
+      const isGif = res && res.fileName.toLowerCase().endsWith('.gif');
+      const etaText = formatEta(job.etaSec);
+      const progressDetail = [
+        job.message || '処理中...',
+        job.speed ? `(${job.speed})` : '',
+        etaText ? `・${etaText}` : ''
+      ].filter(Boolean).join(' ');
+
+      return `
+        <div class="job-top">
+          <div class="job-title">
+            ${statusBadge}
+            <span>${escapeHtml(job.originalName)}</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            ${isActive ? `<button class="btn btn-sm btn-danger" type="button" data-action="cancel-job" data-job-id="${escapeHtml(job.id)}">中止</button>` : ''}
+          </div>
+        </div>
+
+        ${isActive ? `
+          <div class="progress-wrap">
+            <div class="progress-track">
+              <div class="progress-fill" data-role="progress-fill" style="width:${job.percent || 0}%"></div>
+            </div>
+            <div class="progress-meta">
+              <span data-role="progress-msg">${escapeHtml(progressDetail)}</span>
+              <span data-role="progress-pct">${job.percent || 0}%</span>
+            </div>
+          </div>
+        ` : ''}
+
+        ${job.status === 'error' ? `
+          <div style="margin-top:10px; color:#fca5a5; font-size:12.5px; white-space:pre-wrap;">${escapeHtml(job.error || 'エラー')}</div>
+        ` : ''}
+
+        ${job.status === 'done' && res ? `
+          <div class="result-bar">
+            <div class="size-compare">
+              <span>${res.originalSizeMB.toFixed(2)} MB</span>
+              <span>→</span>
+              <span style="color:#34d399; font-size:15px;">${res.outputSizeMB.toFixed(2)} MB</span>
+              <span class="tag ${res.savedPercent >= 0 ? 'ok' : 'warn'}">${res.savedPercent >= 0 ? `-${res.savedPercent}%` : `+${Math.abs(res.savedPercent)}%`}</span>
+              ${res.plan?.mode === 'target_size' && res.plan?.format !== 'gif' ? (
+                res.withinTarget
+                  ? `<span class="tag ok">✅ ${res.plan.targetSizeMB}MB以下達成</span>`
+                  : `<span class="tag warn">目標超過 (最小目安: ${res.plan.minPossibleMB}MB)</span>`
+              ) : ''}
+              ${res.outputMeta ? `<span class="tag">${res.outputMeta.width}×${res.outputMeta.height}</span>` : ''}
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-sm" type="button" data-action="toggle-preview" data-job-id="${escapeHtml(job.id)}">${showPreview ? 'プレビューを閉じる' : '▶ プレビュー'}</button>
+              <button class="btn btn-sm" type="button" data-action="open-folder" data-job-id="${escapeHtml(job.id)}">📂 フォルダで表示</button>
+              <a class="btn btn-sm btn-success" href="${escapeHtml(res.downloadUrl)}" download="${escapeHtml(res.fileName)}">⬇ ダウンロード</a>
+            </div>
+          </div>
+          ${showPreview ? `
+            <div class="preview-box">
+              ${isGif
+                ? `<img src="${escapeHtml(res.previewUrl)}" alt="GIF preview" />`
+                : `<video src="${escapeHtml(res.previewUrl)}" controls playsinline></video>`
+              }
+            </div>
+          ` : ''}
+        ` : ''}
+      `;
+    }
+
+    // Differential DOM update for jobs so open <video> previews NEVER get reset by progress events
+    function syncJobsDom() {
+      const list = Array.from(state.jobs.values()).sort((a, b) => b.createdAt - a.createdAt);
+      const hasFinished = list.some((j) => j.status === 'done' || j.status === 'cancelled' || j.status === 'error');
+      els.clearJobsBtn.style.display = hasFinished ? 'inline-flex' : 'none';
+
+      if (list.length === 0) {
+        els.jobList.innerHTML = '<div class="empty-state">まだ変換ジョブはありません。動画を追加して「圧縮・変換をスタート」を押してください。</div>';
+        state.jobRenderState.clear();
+        return;
+      }
+
+      const empty = els.jobList.querySelector('.empty-state');
+      if (empty) empty.remove();
+
+      const validIds = new Set(list.map((j) => j.id));
+      for (const node of Array.from(els.jobList.children)) {
+        const jid = node.dataset.jobId;
+        if (!validIds.has(jid)) {
+          node.remove();
+          state.jobRenderState.delete(jid);
+        }
+      }
+
+      list.forEach((job, index) => {
+        let card = els.jobList.querySelector(`.job-card[data-job-id="${job.id}"]`);
+        const previewOpen = state.openPreviews.has(job.id);
+        const prev = state.jobRenderState.get(job.id);
+
+        if (!card) {
+          card = document.createElement('div');
+          card.className = 'job-card';
+          card.dataset.jobId = job.id;
+          card.innerHTML = buildJobCardInnerHtml(job);
+          const refNode = els.jobList.children[index] || null;
+          els.jobList.insertBefore(card, refNode);
+          state.jobRenderState.set(job.id, { status: job.status, previewOpen });
+          return;
+        }
+
+        const needsFullRebuild = !prev || prev.status !== job.status || prev.previewOpen !== previewOpen;
+        if (needsFullRebuild) {
+          card.innerHTML = buildJobCardInnerHtml(job);
+          state.jobRenderState.set(job.id, { status: job.status, previewOpen });
+        } else if (job.status === 'running' || job.status === 'queued') {
+          // Lightweight progress-only DOM update
+          const fill = card.querySelector('[data-role="progress-fill"]');
+          const msg = card.querySelector('[data-role="progress-msg"]');
+          const pct = card.querySelector('[data-role="progress-pct"]');
+          if (fill) fill.style.width = `${job.percent || 0}%`;
+          if (pct) pct.textContent = `${job.percent || 0}%`;
+          if (msg) {
+            const etaText = formatEta(job.etaSec);
+            msg.textContent = [
+              job.message || '処理中...',
+              job.speed ? `(${job.speed})` : '',
+              etaText ? `・${etaText}` : ''
+            ].filter(Boolean).join(' ');
+          }
+        }
+      });
+    }
+
+    // Event delegation for file list buttons
+    els.fileList.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-action="remove-file"]');
+      if (!btn) return;
+      const fileId = btn.dataset.fileId;
+      state.files = state.files.filter((f) => f.fileId !== fileId);
+      state.plans.delete(fileId);
+      renderFiles();
+      fetch(`/api/upload/${encodeURIComponent(fileId)}`, { method: 'DELETE' }).catch(() => {});
+    });
+
+    // Event delegation for job list buttons (safe for filenames containing quotes/symbols)
+    els.jobList.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const jobId = btn.dataset.jobId;
+      const job = state.jobs.get(jobId);
+      if (!job) return;
+
+      if (action === 'cancel-job') {
+        await fetch(`/api/jobs/${encodeURIComponent(jobId)}/cancel`, { method: 'POST' });
+      } else if (action === 'toggle-preview') {
+        if (state.openPreviews.has(jobId)) state.openPreviews.delete(jobId);
+        else state.openPreviews.add(jobId);
+        syncJobsDom();
+      } else if (action === 'open-folder' && job.result?.fileName) {
+        await fetch('/api/open-output', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: job.result.fileName })
+        });
+      }
+    });
+
+    // Streaming upload with XMLHttpRequest for real upload progress bar
+    function uploadSingleFile(file, idx, total) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/upload');
+        xhr.setRequestHeader('X-File-Name', encodeURIComponent(file.name));
+
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            els.uploadFill.style.width = `${pct}%`;
+            els.uploadPctText.textContent = `${pct}%`;
+            els.uploadStatusText.textContent = `読み込み＆解析中 (${idx + 1}/${total}): ${file.name}`;
+          }
+        };
+
+        xhr.onload = () => {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(data);
+            } else {
+              reject(new Error(data.error || `HTTP ${xhr.status}`));
+            }
+          } catch {
+            reject(new Error('サーバー応答の解析に失敗しました'));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('読み込み中に接続エラーが発生しました'));
+        xhr.send(file);
+      });
+    }
+
+    async function handleFiles(fileList) {
+      const files = Array.from(fileList || []);
+      if (files.length === 0) return;
+
+      els.uploadProgress.classList.add('active');
+      for (let i = 0; i < files.length; i++) {
+        try {
+          els.uploadFill.style.width = '5%';
+          els.uploadStatusText.textContent = `読み込み中 (${i + 1}/${files.length}): ${files[i].name}`;
+          const uploaded = await uploadSingleFile(files[i], i, files.length);
+          state.files.push(uploaded);
+          renderFiles();
+        } catch (err) {
+          alert(`「${files[i].name}」の読み込みに失敗しました:\n${err.message}`);
+        }
+      }
+      els.uploadProgress.classList.remove('active');
+      els.fileInput.value = '';
+      fetchPlans();
+    }
+
+    // Dropzone events
+    els.dropzone.addEventListener('click', () => els.fileInput.click());
+    els.fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    ['dragenter', 'dragover'].forEach((ev) => {
+      els.dropzone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        els.dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach((ev) => {
+      els.dropzone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        els.dropzone.classList.remove('dragover');
+      });
+    });
+
+    els.dropzone.addEventListener('drop', (e) => {
+      handleFiles(e.dataTransfer.files);
+    });
+
+    els.clearFilesBtn.addEventListener('click', () => {
+      for (const f of state.files) {
+        fetch(`/api/upload/${encodeURIComponent(f.fileId)}`, { method: 'DELETE' }).catch(() => {});
+      }
+      state.files = [];
+      state.plans.clear();
+      renderFiles();
+    });
+
+    els.clearJobsBtn.addEventListener('click', async () => {
+      await fetch('/api/jobs/clear', { method: 'POST' });
+    });
+
+    // Mode tabs
+    document.querySelectorAll('.mode-tab').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-tab').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.mode = btn.dataset.mode;
+        els.targetSizePanel.style.display = state.mode === 'target_size' ? 'block' : 'none';
+        els.qualityPanel.style.display = state.mode === 'quality' ? 'block' : 'none';
+        updateSummaryTag();
+      });
+    });
+
+    // Preset buttons
+    document.querySelectorAll('.preset-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.preset-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        els.targetSizeInput.value = btn.dataset.size;
+        updateSummaryTag();
+      });
+    });
+
+    els.targetSizeInput.addEventListener('input', () => {
+      const val = String(els.targetSizeInput.value);
+      document.querySelectorAll('.preset-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.size === val);
+      });
+      updateSummaryTag();
+    });
+
+    els.crfInput.addEventListener('input', () => {
+      updateCrfLabel();
+      updateSummaryTag();
+    });
+
+    [els.formatSelect, els.speedSelect, els.resolutionSelect, els.fpsSelect, els.audioSelect].forEach((el) => {
+      el.addEventListener('change', updateSummaryTag);
+    });
+    [els.trimStartInput, els.trimEndInput].forEach((el) => {
+      el.addEventListener('input', schedulePlanRefresh);
+    });
+
+    // Start compression
+    els.startBtn.addEventListener('click', async () => {
+      if (state.files.length === 0) return;
+      const options = getCurrentOptions();
+      els.startBtn.disabled = true;
+      try {
+        for (const f of state.files) {
+          const resp = await fetch('/api/compress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileId: f.fileId, options })
+          });
+          const data = await resp.json();
+          if (resp.ok && data.job) {
+            state.jobs.set(data.job.id, data.job);
+          } else {
+            alert(data.error || '圧縮開始に失敗しました');
+          }
+        }
+        syncJobsDom();
+      } finally {
+        els.startBtn.disabled = state.files.length === 0;
+      }
+    });
+
+    els.openOutputBtn.addEventListener('click', () => {
+      fetch('/api/open-output', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    });
+
+    els.shutdownBtn.addEventListener('click', async () => {
+      const activeCount = Array.from(state.jobs.values()).filter((j) => j.status === 'running' || j.status === 'queued').length;
+      const msg = activeCount > 0
+        ? `現在 ${activeCount} 件の変換が実行中です。中断してアプリを終了しますか？`
+        : 'ローカル動画圧縮ツールを終了しますか？';
+      if (!confirm(msg)) return;
+      try {
+        await fetch('/api/shutdown', { method: 'POST' });
+      } catch {}
+      els.shutdownOverlay.classList.add('active');
+    });
+
+    // Init info & SSE
+    async function init() {
+      const saved = loadSettings();
+
+      try {
+        const resp = await fetch('/api/info');
+        const info = await resp.json();
+        state.hw = info.hw;
+        els.outputDirText.textContent = `保存先: ${info.outputDir}`;
+        if (info.hw?.hasGpu && info.hw.recommendedGpu) {
+          const g = info.hw.recommendedGpu;
+          els.gpuPill.textContent = `⚡ ${g.label} 利用可能`;
+          els.gpuPill.classList.add('gpu');
+          els.gpuOption.disabled = false;
+          els.gpuOption.textContent = `⚡ ${g.label}`;
+          if (saved?.speedMode === 'gpu') {
+            els.speedSelect.value = 'gpu';
+          }
+        } else {
+          els.gpuPill.textContent = '💻 CPU エンコード (FFmpeg)';
+          if (saved?.speedMode && saved.speedMode !== 'gpu') {
+            els.speedSelect.value = saved.speedMode;
+          }
+        }
+        if (saved?.speedMode && saved.speedMode !== 'gpu') {
+          els.speedSelect.value = saved.speedMode;
+        }
+        if (Array.isArray(info.jobs)) {
+          for (const j of info.jobs) state.jobs.set(j.id, j);
+          syncJobsDom();
+        }
+      } catch {
+        els.gpuPill.textContent = '接続エラー';
+      }
+
+      updateSummaryTag();
+
+      const ev = new EventSource('/api/events');
+      ev.addEventListener('job_update', (e) => {
+        try {
+          const job = JSON.parse(e.data);
+          state.jobs.set(job.id, job);
+          syncJobsDom();
+        } catch {}
+      });
+      ev.addEventListener('jobs_cleared', (e) => {
+        try {
+          const { removed } = JSON.parse(e.data);
+          for (const id of removed || []) {
+            state.jobs.delete(id);
+            state.openPreviews.delete(id);
+          }
+          syncJobsDom();
+        } catch {}
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

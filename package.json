@@ -1,0 +1,29 @@
+{
+  "name": "local-video-compressor",
+  "version": "1.0.0",
+  "description": "Zero-dependency local video compressor & converter (FFmpeg + Node.js) with target size presets (20MB, 10MB, 8MB, etc.), GPU acceleration, and drag-and-drop Web UI / CLI.",
+  "main": "server.js",
+  "bin": {
+    "video-compress": "./cli.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "open": "node server.js --open",
+    "compress": "node cli.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "video",
+    "compressor",
+    "ffmpeg",
+    "mp4",
+    "gif",
+    "nvenc",
+    "local",
+    "zero-dependency"
+  ],
+  "author": "ryzenkou",
+  "license": "MIT"
+}
